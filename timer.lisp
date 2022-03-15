@@ -174,132 +174,139 @@ start/run state."
       (help)
       (return-from main))
     (with-ltk ()
-    (let* ((main (make-instance 'frame
-                                :name "main"))
-           (top (make-instance 'frame :name "top" :master main))
-           (bot (make-instance 'frame :name "bottom" :master main))
-           (hms (mapcar
-                 (lambda (n)
-                   (make-instance 'message
-                                  :foreground "black"
-                                  :background "white"
-                                  :name n
-                                  :master top))
-                 (list "h" "m" "s")))
-           (start (make-instance 'button
-                                 :master bot
-                                 :name "start-stop"
-                                 :text "start/stop"))
-           (reset (make-instance 'button
-                                 :master bot
-                                 :name "reset"
-                                 :text "reset"))
-           (selected 1) ; currently selected time element
-           )
-      (labels ((find-hms-index (widget)
-                 (loop
-                    for i from 0
-                    for w in hms
-                    when (eq w widget)
-                    do (return i)
-                    finally (return nil)))
-               (select (i)
-                 (configure (elt hms i) :foreground "white")
-                 (configure (elt hms i) :background "black"))
-               (deselect (i)
-                 (configure (elt hms i) :foreground "black")
-                 (configure (elt hms i) :background "white"))
-               (start-button ()
-                 (focus *tk*)
-                 (timer-control :toggle #'update-messages))
-               (reset-button ()
-                 (focus *tk*)
-                 (stop-alarm)
-                 (timer-control :reset #'update-messages))
-               (zero-button ()
-                 (setf *start-time* 0)
-                 (reset-button))
-               (update-messages ()
-                 (mapcar (lambda (widget time)
-                           (setf (text widget)
-                                 (format nil "~2,'0d" time)))
-                         hms
-                         (seconds->hms *time*)))
-               (incf-button (amount)
-                 (incf-timer amount
-                             (case selected
-                               (0 :hour)
-                               (1 :minute)
-                               (2 :second)))
-                 (update-messages))
-               (move (delta)
-                 (deselect selected)
-                 (setf selected
-                       (mod (+ selected delta)
-                            3))
-                 (select selected)))
-        (select selected)
-        (pack main)
-        (pack top :side :top)
-        (dolist (text hms)
-          (pack text :side :left))
-        (update-messages)
-        (bind *tk* "<KeyPress>"
-              (lambda (event)
-                (let* ((code (event-keycode event))
-                       (key (code->key code)))
-                  (case key
-                    (:0 (zero-button))
-                    (:left (move -1))
-                    (:right (move 1))
-                    (:up (incf-button 1))
-                    (:down (incf-button -1))
-                    (:space (start-button))
-                    (:backspace (reset-button))))))
-        (loop
-           for w in hms
-           for i from 0
-           do
-             (let* ((index i))
-               (bind w "<Enter>"
-                     (lambda (arg)
-                       (loop
-                          for j below 3
-                          do (deselect j))
-                       (setf selected index)
-                       (select selected)
-                       (update-messages)))))
-        ;; these work on my system
-        (bind *tk* "<Button-4>" ; scroll up
-              (lambda (&optional arg)
-                (declare (ignore arg))
-                (incf-button 1)))
-        (bind *tk* "<Button-5>" ; scroll down
-              (lambda (&optional arg)
-                (declare (ignore arg))
-                (incf-button -1)))
-        (bind *tk* "<Button-1>" ; left-click
-              (lambda (&optional arg)
-                (declare (ignore arg))
-                (start-button)))
-        (bind *tk* "<Button-2>" ; middle-click
-              (lambda (&optional arg)
-                (declare (ignore arg))
-                (zero-button)))
-        (bind *tk* "<Button-3>" ; right-click
-              (lambda (&optional arg)
-                (declare (ignore arg))
-                (reset-button)))
-        (setf (command start)
-              #'start-button)
-        (setf (command reset)
-              #'reset-button)
-        (pack bot :side :bottom)
-        (pack start :side :left)
-        (pack reset :side :left)
-        (when remaining
-          (setf (title *tk*)
-                (first remaining))))))))
+      (let* ((main (make-instance 'frame
+                                  :name "main"))
+             (top (make-instance 'frame :name "top" :master main))
+             (bot (make-instance 'frame :name "bottom" :master main))
+             (hms (mapcar
+                   (lambda (n)
+                     (make-instance 'message
+                                    :foreground "black"
+                                    :background "white"
+                                    :name n
+                                    :master top))
+                   (list "h" "m" "s")))
+             (start (make-instance 'button
+                                   :master bot
+                                   :name "start-stop"
+                                   :text "start/stop"))
+             (reset (make-instance 'button
+                                   :master bot
+                                   :name "reset"
+                                   :text "reset"))
+             (selected 1) ; currently selected time element
+             )
+        (labels ((find-hms-index (widget)
+                   (loop
+                      for i from 0
+                      for w in hms
+                      when (eq w widget)
+                      do (return i)
+                      finally (return nil)))
+                 (select (i)
+                   (configure (elt hms i) :foreground "white")
+                   (configure (elt hms i) :background "black"))
+                 (deselect (i)
+                   (configure (elt hms i) :foreground "black")
+                   (configure (elt hms i) :background "white"))
+                 ;; NOTE: The use of #'focus here is a hack to prevent
+                 ;; buttons from grabbing the keyboard and destroying
+                 ;; the keyboard space binding.  I don't know a better
+                 ;; way around this at the moment.
+                 (start-button ()
+                   (focus *tk*)
+                   (timer-control :toggle #'update-messages))
+                 (reset-button ()
+                   (focus *tk*)
+                   (stop-alarm)
+                   (timer-control :reset #'update-messages))
+                 (zero-button ()
+                   (setf *start-time* 0)
+                   (reset-button))
+                 (update-messages ()
+                   (mapcar (lambda (widget time)
+                             (setf (text widget)
+                                   (format nil "~2,'0d" time)))
+                           hms
+                           (seconds->hms *time*)))
+                 (incf-button (amount)
+                   (incf-timer amount
+                               (case selected
+                                 (0 :hour)
+                                 (1 :minute)
+                                 (2 :second)))
+                   (update-messages))
+                 (move (delta)
+                   (deselect selected)
+                   (setf selected
+                         (mod (+ selected delta)
+                              3))
+                   (select selected)))
+          (select selected)
+          (pack main)
+          (pack top :side :top)
+          (dolist (text hms)
+            (pack text :side :left))
+          (update-messages)
+          (bind *tk* "<KeyPress>"
+                (lambda (event)
+                  (let* ((code (event-keycode event))
+                         (key (code->key code)))
+                    (case key
+                      (:0 (zero-button))
+                      (:left (move -1))
+                      (:right (move 1))
+                      (:up (incf-button 1))
+                      (:down (incf-button -1))
+                      (:space (start-button))
+                      (:backspace (reset-button))))))
+          (loop
+             for w in hms
+             for i from 0
+             do
+               (let* ((index i))
+                 (bind w "<Enter>"
+                       (lambda (arg)
+                         (loop
+                            for j below 3
+                            do (deselect j))
+                         (setf selected index)
+                         (select selected)
+                         (update-messages)))))
+          ;; these work on my system
+          (loop
+             for w in hms
+             do 
+               (bind w "<Button-4>" ; scroll up
+                     (lambda (&optional arg)
+                       (declare (ignore arg))
+                       (incf-button 1)))
+               (bind w "<Button-5>" ; scroll down
+                     (lambda (&optional arg)
+                       (declare (ignore arg))
+                       (incf-button -1)))
+               (bind w "<Button-1>" ; left-click
+                     (lambda (&optional arg)
+                       (declare (ignore arg))
+                       (start-button)))
+               (bind w "<Button-2>" ; middle-click
+                     (lambda (&optional arg)
+                       (declare (ignore arg))
+                       (zero-button)))
+               (bind w "<Button-3>" ; right-click
+                     (lambda (&optional arg)
+                       (declare (ignore arg))
+                       (reset-button))))
+          (setf (command start)
+                #'start-button)
+          (setf (command reset)
+                #'reset-button)
+          (pack bot :side :bottom)
+          (pack start :side :left)
+          (pack reset :side :left)
+          (when remaining
+            (setf (title *tk*)
+                  (first remaining))))))))
 
 (when (member :script *features*)
   (main))

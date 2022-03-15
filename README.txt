@@ -2,7 +2,8 @@ timer.lisp is a simple wish/Tk/Ltk GUI timer that depends on a few
 dependencies, minimally
 
 * quicklisp
-* cl-getopt (https://github.com/ghollisjr/cl-getopt)
+* split-sequence (quicklisp)
+* cl-getopt (quicklisp)
 * sbcl-script (https://github.com/ghollisjr/sbcl-script)
 
 The included Makefile assumes that you want to install the script and
@@ -13,3 +14,10 @@ Makefile/build-gui-core.sh also assume that you have installed
 make-sbcl-core somewhere in your $PATH so that you can automatically
 build SBCL cores for scripting.  See the sbcl-script README for more
 information.
+
+The gui.core file is larger than it needs to be.  This is because I
+personally reuse SBCL cores whenever possible, so this same core can
+be used for many different GUI applications with small scripts that
+load them.  The minimal requirements are the ones listed above, so
+changing the core would be as simple as editing build-gui-core.sh to
+only load those systems into the core file.

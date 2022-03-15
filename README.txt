@@ -28,3 +28,10 @@ be used for many different GUI applications with small scripts that
 load them.  The minimal requirements are the ones listed above, so
 changing the core would be as simple as editing build-gui-core.sh to
 only load those systems into the core file.
+
+Controlling the timer:
+
+1. Keyboard arrow keys to adjust the HMS, Space to start/stop, and
+   Backspace to reset.
+
+2. Mouse scroll wheel to adjust the HMS, start/stop & reset buttons.

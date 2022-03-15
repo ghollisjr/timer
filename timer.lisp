@@ -196,7 +196,14 @@ start/run state."
                                  :text "reset"))
            (selected 1) ; currently selected time element
            )
-      (labels ((select (i)
+      (labels ((find-hms-index (widget)
+                 (loop
+                    for i from 0
+                    for w in hms
+                    when (eq w widget)
+                    do (return i)
+                    finally (return nil)))
+               (select (i)
                  (configure (elt hms i) :foreground "white")
                  (configure (elt hms i) :background "black"))
                (deselect (i)
@@ -215,6 +222,13 @@ start/run state."
                                  (format nil "~2,'0d" time)))
                          hms
                          (seconds->hms *time*)))
+               (incf-button (amount)
+                 (incf-timer amount
+                             (case selected
+                               (0 :hour)
+                               (1 :minute)
+                               (2 :second)))
+                 (update-messages))
                (move (delta)
                  (deselect selected)
                  (setf selected
@@ -236,20 +250,32 @@ start/run state."
                         (reset-button))
                     (:left (move -1))
                     (:right (move 1))
-                    (:up (incf-timer 1
-                                     (case selected
-                                       (0 :hour)
-                                       (1 :minute)
-                                       (2 :second)))
-                         (update-messages))
-                    (:down (incf-timer -1
-                                       (case selected
-                                         (0 :hour)
-                                         (1 :minute)
-                                         (2 :second)))
-                           (update-messages))
+                    (:up (incf-button 1))
+                    (:down (incf-button -1))
                     (:space (start-button))
                     (:backspace (reset-button))))))
+        (loop
+           for w in hms
+           for i from 0
+           do
+             (let* ((index i))
+               (bind w "<Enter>"
+                     (lambda (arg)
+                       (loop
+                          for j below 3
+                          do (deselect j))
+                       (setf selected index)
+                       (select selected)
+                       (update-messages)))))
+        ;; these work on my system
+        (bind *tk* "<Button-4>" ; scroll up
+              (lambda (&optional arg)
+                (declare (ignore arg))
+                (incf-button 1)))
+        (bind *tk* "<Button-5>" ; scroll down
+              (lambda (&optional arg)
+                (declare (ignore arg))
+                (incf-button -1)))
         (setf (command start)
               #'start-button)
         (setf (command reset)

@@ -216,6 +216,9 @@ start/run state."
                  (focus *tk*)
                  (stop-alarm)
                  (timer-control :reset #'update-messages))
+               (zero-button ()
+                 (setf *start-time* 0)
+                 (reset-button))
                (update-messages ()
                  (mapcar (lambda (widget time)
                            (setf (text widget)
@@ -246,8 +249,7 @@ start/run state."
                 (let* ((code (event-keycode event))
                        (key (code->key code)))
                   (case key
-                    (:0 (setf *start-time* 0)
-                        (reset-button))
+                    (:0 (zero-button))
                     (:left (move -1))
                     (:right (move 1))
                     (:up (incf-button 1))
@@ -276,6 +278,18 @@ start/run state."
               (lambda (&optional arg)
                 (declare (ignore arg))
                 (incf-button -1)))
+        (bind *tk* "<Button-1>" ; left-click
+              (lambda (&optional arg)
+                (declare (ignore arg))
+                (start-button)))
+        (bind *tk* "<Button-2>" ; middle-click
+              (lambda (&optional arg)
+                (declare (ignore arg))
+                (zero-button)))
+        (bind *tk* "<Button-3>" ; right-click
+              (lambda (&optional arg)
+                (declare (ignore arg))
+                (reset-button)))
         (setf (command start)
               #'start-button)
         (setf (command reset)

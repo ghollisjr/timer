@@ -31,8 +31,10 @@ only load those systems into the core file.
 
 Controlling the timer:
 
-1. Keyboard arrow keys to adjust the HMS, Space to start/stop, and
-   Backspace to reset.
+1. Keyboard arrow keys to adjust the HMS, Space to start/stop,
+   Backspace to reset, 0 to set timer to zero.
 
-2. Mouse scroll wheel to adjust the HMS, left-click start/stop & reset
-   buttons.
+2. Mouse scroll wheel to adjust the HMS, left-click start/stop,
+   right-click to reset, middle-click to zero.
+
+3. Can also use the clickable buttons on the GUI.

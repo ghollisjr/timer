@@ -1,5 +1,10 @@
 #!/usr/bin/env -S sbcl --core ${HOME}/lib/sbcl-cores/gui.core --script
 ;; Simple timer with start/stop/reset buttons
+
+(defparameter *alarm-path*
+  "/home/ghollisjr/Music/AlarmClock_Sound/Custom_Alarmclock-mechanical.ogg"
+  "Edit this path to a nice alarm sound you want to use on your system.")
+
 (when (not (member :script *features*))
   (ql:quickload :cl-getopt)
   (ql:quickload :sbcl-script)
@@ -20,8 +25,6 @@
   "Start time for timer.")
 (defvar *time* 0
   "Remaining time on the timer in seconds")
-(defvar *running* nil
-  "T for running, NIL for stopped.")
 
 (defun seconds->hms (seconds)
   "Hacked version of cl-ana.quantity:convert-units"
@@ -80,8 +83,6 @@ hms for convenience."
 
 (defvar *alarm-process* nil
   "Process for playing alarm sound")
-(defparameter *alarm-path*
-  "/home/ghollisjr/Music/AlarmClock_Sound/Custom_Alarmclock-mechanical.ogg")
 
 (defun start-alarm ()
   "Starts playing alarm"

@@ -1,10 +1,17 @@
 timer.lisp is a simple wish/Tk/Ltk GUI timer that depends on a few
 dependencies, minimally
 
+* SBCL
+* paplay (pulseaudio)
 * quicklisp
 * split-sequence (quicklisp)
 * cl-getopt (quicklisp)
 * sbcl-script (https://github.com/ghollisjr/sbcl-script)
+* A sound file of your choice for the alarm sound effect
+
+Make sure to edit the *alarm-path* variable to point to an alarm sound
+file that you want to use for the alarm if you want an alarm to sound,
+as there is no visual cue that the alarm has finished.
 
 The included Makefile assumes that you want to install the script and
 core file under your $HOME directory.  If this isn't desirable then

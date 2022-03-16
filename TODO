@@ -5,9 +5,11 @@ Key: - Completed
      % Inapplicable
      c Currently
 
-+ Fix time adjust behavior.  While in running state, adjustments are
+- Fix time adjust behavior.  While in running state, adjustments are
   possible but it does not stop the timer.  Either
 
   1. Make adjustments while running impossible.
   2. Make adjustments while running only affect the HMS element being
      adjusted in the GUI.
+
+  UPDATE: Choose 1 since it's simple and intuitive.

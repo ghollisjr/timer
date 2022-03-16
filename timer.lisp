@@ -230,12 +230,13 @@ start/run state."
                            hms
                            (seconds->hms *time*)))
                  (incf-button (amount)
-                   (incf-timer amount
-                               (case selected
-                                 (0 :hour)
-                                 (1 :minute)
-                                 (2 :second)))
-                   (update-messages))
+                   (when (not (= *state* 1))
+                     (incf-timer amount
+                                 (case selected
+                                   (0 :hour)
+                                   (1 :minute)
+                                   (2 :second)))
+                     (update-messages)))
                  (move (delta)
                    (deselect selected)
                    (setf selected
@@ -276,7 +277,7 @@ start/run state."
           ;; these work on my system
           (loop
              for w in hms
-             do 
+             do
                (bind w "<Button-4>" ; scroll up
                      (lambda (&optional arg)
                        (declare (ignore arg))
